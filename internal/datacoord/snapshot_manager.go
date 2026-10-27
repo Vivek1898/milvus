@@ -36,7 +36,7 @@ import (
 	"github.com/milvus-io/milvus/internal/datacoord/allocator"
 	"github.com/milvus-io/milvus/internal/datacoord/broker"
 	"github.com/milvus-io/milvus/internal/metastore/model"
-	snapshotstorage "github.com/milvus-io/milvus/internal/snapshotio/storage"
+	snapshotadapter "github.com/milvus-io/milvus/internal/snapshotio/storage"
 	"github.com/milvus-io/milvus/internal/streamingcoord/server/broadcaster"
 	"github.com/milvus-io/milvus/internal/util/hookutil"
 	"github.com/milvus-io/milvus/internal/util/indexparamcheck"
@@ -44,6 +44,7 @@ import (
 	"github.com/milvus-io/milvus/pkg/v3/metrics"
 	"github.com/milvus-io/milvus/pkg/v3/mlog"
 	"github.com/milvus-io/milvus/pkg/v3/proto/datapb"
+	snapshotstorage "github.com/milvus-io/milvus/pkg/v3/snapshotio"
 	"github.com/milvus-io/milvus/pkg/v3/streaming/util/message"
 	"github.com/milvus-io/milvus/pkg/v3/util"
 	"github.com/milvus-io/milvus/pkg/v3/util/funcutil"
@@ -829,9 +830,9 @@ func (sm *snapshotManager) RestoreExternalSnapshot(
 	unlockTarget := sm.lockRestoreTarget(targetDbName, targetCollectionName)
 	defer unlockTarget()
 
-	resolved, err := snapshotstorage.ResolveForeignStorage(
+	resolved, err := snapshotadapter.ResolveForeignStorage(
 		ctx,
-		snapshotstorage.InstanceConfigFromParamtable(Params),
+		snapshotadapter.InstanceConfigFromParamtable(Params),
 		snapshotstorage.DirectionRestore,
 		snapshotS3Location,
 		externalSpec,
@@ -1348,9 +1349,9 @@ func (sm *snapshotManager) restoreData(
 	var snapshotData *snapshotstorage.SnapshotData
 	var err error
 	if external {
-		resolved, resolveErr := snapshotstorage.ResolveForeignStorage(
+		resolved, resolveErr := snapshotadapter.ResolveForeignStorage(
 			ctx,
-			snapshotstorage.InstanceConfigFromParamtable(Params),
+			snapshotadapter.InstanceConfigFromParamtable(Params),
 			snapshotstorage.DirectionRestore,
 			snapshotS3Location,
 			externalSpec,
